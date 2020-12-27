@@ -8,9 +8,14 @@ public class Player : MonoBehaviour
 {
     Rigidbody rb;
     [SerializeField] float speed;
+    [SerializeField] float jumpPower;
     [SerializeField] int collectedCubeCount;
     public Text scoreText;
     public GameObject winText;
+
+    public bool isGround;
+
+    public float x, y;
 
     bool isGameEnd;
     void Start()
@@ -19,37 +24,63 @@ public class Player : MonoBehaviour
     }
     private void OnTriggerEnter(Collider other)
     {
-        if(other.gameObject.CompareTag("Collect"))
+        if (other.gameObject.CompareTag("Collect"))
         {
             collectedCubeCount++;
             Destroy(other.gameObject);
             scoreText.text = collectedCubeCount + " / 7";
+        }
+        else if (other.gameObject.CompareTag("Poison"))
+        {
+            SceneManager.LoadScene(0);
+        }
+    }
+    private void OnCollisionEnter(Collision collision)
+    {
+        if(collision.gameObject.CompareTag("Ground"))
+        {
+            isGround = true;
+        }
+        if(collision.gameObject.CompareTag("Spike"))
+        {
+            SceneManager.LoadScene(0);
+        }
+    }
+    private void OnCollisionExit(Collision collision)
+    {
+        if (collision.gameObject.CompareTag("Ground"))
+        {
+            isGround = false;
         }
     }
     private void GameEnd()
     {
         winText.SetActive(true);
         isGameEnd = true;
-        rb.velocity = Vector3.zero;
+        rb.isKinematic = true;
     }
     void Update()
     {
         #region Input
         if(!isGameEnd)
         {
-            if (Input.GetKey(KeyCode.DownArrow))
-                rb.AddForce(Vector3.back * speed);
-            if (Input.GetKey(KeyCode.UpArrow))
-                rb.AddForce(Vector3.forward * speed);
-            if (Input.GetKey(KeyCode.RightArrow))
-                rb.AddForce(Vector3.right * speed);
-            if (Input.GetKey(KeyCode.LeftArrow))
-                rb.AddForce(Vector3.left * speed);
+            x = Input.GetAxis("Horizontal");
+            y = Input.GetAxis("Vertical");
+            if(Input.GetKeyDown(KeyCode.Space) && isGround)
+            {
+                rb.AddForce(Vector3.up * jumpPower,ForceMode.Impulse);
+            }
         }
         #endregion
         if (collectedCubeCount >= Global.completedCubeCount)
         {
             GameEnd();
         }
+
+        transform.position = new Vector3(Mathf.Clamp(transform.position.x, -5, 5), 0.65f, Mathf.Clamp(transform.position.z, -5, 5));
+    }
+    private void FixedUpdate()
+    {
+        rb.velocity = new Vector3(x * speed, rb.velocity.y, y * speed);
     }
 }
