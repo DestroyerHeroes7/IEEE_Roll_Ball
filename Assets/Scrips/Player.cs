@@ -77,7 +77,7 @@ public class Player : MonoBehaviour
             GameEnd();
         }
 
-        transform.position = new Vector3(Mathf.Clamp(transform.position.x, -5, 5), 0.65f, Mathf.Clamp(transform.position.z, -5, 5));
+        transform.position = new Vector3(Mathf.Clamp(transform.position.x, -5, 5), transform.position.y, Mathf.Clamp(transform.position.z, -5, 5));
     }
     private void FixedUpdate()
     {
